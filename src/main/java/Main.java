@@ -1,13 +1,8 @@
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("start");
-        //new LogFileReader();
-        try {
-            KafkaProducerExample.runProducer(10);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.out.println("Program started via main method");
+        new LogFileReader();
     }
 
 }

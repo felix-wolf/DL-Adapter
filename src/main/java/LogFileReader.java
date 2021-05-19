@@ -8,12 +8,22 @@ public class LogFileReader {
     private ResultSet resultSet = null;
 
     public LogFileReader() {
-        createConnection();
+        initialsTimer();
+        // createConnection();
+    }
+
+    private void initialsTimer() {
+        TimerUtil timer = new TimerUtil(5000);
+        timer.startTimer(fireCounts -> {
+            System.out.println("Fired, count: " + fireCounts);
+            if (fireCounts == 10) {
+                timer.stopTimer();
+            }
+        });
     }
 
     private void createConnection() {
         try {
-            // Class.forName("org.apache.derby.jdbc.ClientDriver").getDeclaredConstructor().newInstance();
             Class.forName("org.apache.derby.jdbc.EmbeddedDriver").getDeclaredConstructor().newInstance();
             conn = DriverManager.getConnection(PATH_TO_DB);
             runTestStatement();
