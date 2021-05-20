@@ -1,21 +1,22 @@
-import io.reactivex.rxjava3.core.Observable;
+package core;
+
 import timer.TimerUtil;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.regex.Pattern;
 
 public class LogFileReader {
 
-    DataFetcher fetcher;
     Date lastRead = null;
 
     public LogFileReader() {
-        fetcher = new DataFetcher();
         initialiseTimer();
     }
 
@@ -24,12 +25,10 @@ public class LogFileReader {
         timer.startTimer(fireCounts -> {
             System.out.println("Fired, count: " + fireCounts);
             // System.out.println(getNewDatabaseEntries() != null && !getNewDatabaseEntries().isEmpty());
-            if (getNewDatabaseEntries() != null && !getNewDatabaseEntries().isEmpty()) {
+            ArrayList<String> newEntries = getNewDatabaseEntries();
+            if (newEntries != null && newEntries.isEmpty()) {
                 lastRead = new Date(System.currentTimeMillis());
-                //Observable<Book> books = fetcher.loadNewBooks();
-                // books.subscribe();
-                //String latestTimeStamp = extractLastTimeStamp(books.map(Book::getUpdatedAt));
-                //fetcher.updateBookTimeStamp(latestTimeStamp);
+
             }
             // process books
             if (fireCounts == 3) {
@@ -37,15 +36,6 @@ public class LogFileReader {
             }
         });
     }
-
-    /*
-    private String extractLastTimeStamp(Observable<String> updatedAtObservable) {
-        return updatedAtObservable
-                .sorted(Comparator.reverseOrder())
-                .first("")
-                .blockingGet();
-    }
-     */
 
     private ArrayList<String> getNewDatabaseEntries() {
         File file = getLogFileOfToday();
@@ -81,11 +71,8 @@ public class LogFileReader {
             for (String line; (line = br.readLine()) != null;) {
                 if (!line.equals("")) {
                     if (line.contains("jdbc.sqlonly")) logs.add(line);
-                } else {
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
