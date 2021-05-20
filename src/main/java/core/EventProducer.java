@@ -1,11 +1,22 @@
+package core;
+
 import helper.Constants;
+import models.Operation;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+import java.util.ArrayList;
 import java.util.Properties;
 
-public class KafkaProducerExample {
+public class EventProducer {
+
+    private Producer<Long, String> producer;
+
+
+    public EventProducer() {
+        producer = createProducer();
+    }
 
     private static Producer<Long, String> createProducer() {
         Properties props = new Properties();
@@ -16,14 +27,14 @@ public class KafkaProducerExample {
         return new KafkaProducer<>(props);
     }
 
-    static void runProducer(final int sendMessageCount) throws Exception {
-        System.out.println("entered runProducer with argument: " + sendMessageCount);
+    static void produceEvents(final ArrayList<Operation> events) throws Exception {
         final Producer<Long, String> producer = createProducer();
         long time = System.currentTimeMillis();
 
         try {
-            for (long index = time; index < time + sendMessageCount; index++) {
-                final ProducerRecord<Long, String> record = new ProducerRecord<>(Constants.TOPIC, index, "Hello you, this is a test" + index);
+            for (Operation operation : events) {
+                long index = operation.getTime();
+                final ProducerRecord<Long, String> record = new ProducerRecord<>(Constants.TOPIC, index, operation.toJson());
                 RecordMetadata metadata = producer.send(record).get();
                 long elapsedTime = System.currentTimeMillis() - time;
                 System.out.printf(

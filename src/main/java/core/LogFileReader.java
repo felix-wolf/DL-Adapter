@@ -1,11 +1,14 @@
 package core;
 
+import helper.Utils;
+import models.Operation;
 import timer.TimerUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,12 +29,17 @@ public class LogFileReader {
             System.out.println("Fired, count: " + fireCounts);
             // System.out.println(getNewDatabaseEntries() != null && !getNewDatabaseEntries().isEmpty());
             ArrayList<String> newEntries = getNewDatabaseEntries();
-            if (newEntries != null && newEntries.isEmpty()) {
+            if (newEntries != null && !newEntries.isEmpty()) {
                 lastRead = new Date(System.currentTimeMillis());
-
+                ArrayList<Operation> convertedEvents = new LogConverter().convertLogs(newEntries);
+                try {
+                    EventProducer.produceEvents(convertedEvents);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
-            // process books
-            if (fireCounts == 3) {
+            // stop timer
+            if (fireCounts == -1) {
                 timer.stopTimer();
             }
         });
@@ -43,14 +51,8 @@ public class LogFileReader {
             ArrayList<String> logs = extractModifyingSQLStatements(file);
             logs.removeIf(log -> {
                 String[] parts = log.split(Pattern.quote(" ["));
-                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d HH:mm:ss.S");
-                try {
-                    Date data = format.parse(parts[0]);
-                    return lastRead != null && data.before(lastRead);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                return false;
+                Date date = Utils.getDateFromLogString(parts[0]);
+                return lastRead != null && date != null &&date.before(lastRead);
             });
             return logs;
         } else {
@@ -71,6 +73,7 @@ public class LogFileReader {
             for (String line; (line = br.readLine()) != null;) {
                 if (!line.equals("")) {
                     if (line.contains("jdbc.sqlonly")) logs.add(line);
+
                 }
             }
         } catch (IOException e) {
