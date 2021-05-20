@@ -1,50 +1,98 @@
-import java.sql.*;
+import io.reactivex.rxjava3.core.Observable;
+import timer.TimerUtil;
+
+import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.regex.Pattern;
 
 public class LogFileReader {
 
-    private static final String PATH_TO_DB = "jdbc:derby:../library-assistant/database";
-    private Connection conn = null;
-    private Statement stmt = null;
-    private ResultSet resultSet = null;
+    DataFetcher fetcher;
+    Date lastRead = null;
 
     public LogFileReader() {
-        initialsTimer();
-        // createConnection();
+        fetcher = new DataFetcher();
+        initialiseTimer();
     }
 
-    private void initialsTimer() {
+    private void initialiseTimer() {
         TimerUtil timer = new TimerUtil(5000);
         timer.startTimer(fireCounts -> {
             System.out.println("Fired, count: " + fireCounts);
-            if (fireCounts == 10) {
+            // System.out.println(getNewDatabaseEntries() != null && !getNewDatabaseEntries().isEmpty());
+            if (getNewDatabaseEntries() != null && !getNewDatabaseEntries().isEmpty()) {
+                lastRead = new Date(System.currentTimeMillis());
+                //Observable<Book> books = fetcher.loadNewBooks();
+                // books.subscribe();
+                //String latestTimeStamp = extractLastTimeStamp(books.map(Book::getUpdatedAt));
+                //fetcher.updateBookTimeStamp(latestTimeStamp);
+            }
+            // process books
+            if (fireCounts == 3) {
                 timer.stopTimer();
             }
         });
     }
 
-    private void createConnection() {
-        try {
-            Class.forName("org.apache.derby.jdbc.EmbeddedDriver").getDeclaredConstructor().newInstance();
-            conn = DriverManager.getConnection(PATH_TO_DB);
-            runTestStatement();
-        } catch (Exception exception) {
-            exception.printStackTrace();
+    /*
+    private String extractLastTimeStamp(Observable<String> updatedAtObservable) {
+        return updatedAtObservable
+                .sorted(Comparator.reverseOrder())
+                .first("")
+                .blockingGet();
+    }
+     */
+
+    private ArrayList<String> getNewDatabaseEntries() {
+        File file = getLogFileOfToday();
+        if (file.exists()) {
+            ArrayList<String> logs = extractModifyingSQLStatements(file);
+            logs.removeIf(log -> {
+                String[] parts = log.split(Pattern.quote(" ["));
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d HH:mm:ss.S");
+                try {
+                    Date data = format.parse(parts[0]);
+                    return lastRead != null && data.before(lastRead);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            });
+            return logs;
+        } else {
+            return null;
         }
     }
 
-    private boolean runTestStatement() {
-        try {
-            PreparedStatement statement = conn.prepareStatement("SELECT * from BOOK");
-            resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                String name = resultSet.getString("title");
-                System.out.println("Book found with title: " + name);
+    private File getLogFileOfToday() {
+        Date date = new Date();
+        SimpleDateFormat format = new SimpleDateFormat("d-MM-yyyy");
+        String formattedDate = format.format(date);
+        return new File("../library-assistant/logs/logs_" + formattedDate + ".log");
+    }
+
+    private ArrayList<String> extractModifyingSQLStatements(File file) {
+        ArrayList<String> logs = new ArrayList<>();
+        try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+            for (String line; (line = br.readLine()) != null;) {
+                if (!line.equals("")) {
+                    if (line.contains("jdbc.sqlonly")) logs.add(line);
+                } else {
+                }
             }
-            return true;
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        if (!logs.isEmpty()) {
+            logs.removeIf(line -> line.contains("SELECT"));
+        }
+        return logs;
     }
 
 }

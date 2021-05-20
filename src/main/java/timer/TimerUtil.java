@@ -1,3 +1,5 @@
+package timer;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -13,7 +15,7 @@ public class TimerUtil {
         this.delayInMillis = delayInMillis;
     }
 
-    void startTimer(TimerListener timerListener) {
+    public void startTimer(TimerListener timerListener) {
         System.out.println("startTimer");
         timer = new Timer();
         timer.schedule(new TimerTask() {
@@ -25,7 +27,7 @@ public class TimerUtil {
         }, 0, delayInMillis);
     }
 
-    void stopTimer() {
+    public void stopTimer() {
         fireCounts = 0;
         timer.cancel();
     }
