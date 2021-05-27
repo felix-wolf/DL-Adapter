@@ -11,13 +11,6 @@ import java.util.Properties;
 
 public class EventProducer {
 
-    private Producer<Long, String> producer;
-
-
-    public EventProducer() {
-        producer = createProducer();
-    }
-
     private static Producer<Long, String> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, Constants.BOOTSTRAP_SERVERS);
@@ -33,8 +26,9 @@ public class EventProducer {
 
         try {
             for (Operation operation : events) {
+                String topic = operation.getObjectType().name().toLowerCase();
                 long index = operation.getTime();
-                final ProducerRecord<Long, String> record = new ProducerRecord<>(Constants.TOPIC, index, operation.toJson());
+                final ProducerRecord<Long, String> record = new ProducerRecord<>(topic, index, operation.toJson());
                 RecordMetadata metadata = producer.send(record).get();
                 long elapsedTime = System.currentTimeMillis() - time;
                 System.out.printf(
@@ -46,7 +40,5 @@ public class EventProducer {
             producer.close();
         }
     }
-
-
 
 }
