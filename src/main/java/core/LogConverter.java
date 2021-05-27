@@ -35,7 +35,6 @@ public class LogConverter {
                     if (operation != null) operations.add(operation);
                     break;
             }
-
         }
         return operations;
     }
@@ -49,19 +48,15 @@ public class LogConverter {
         switch (model) {
             case BOOK:
                 object = buildBook(parameters);
-                System.out.println("book");
                 break;
             case MEMBER:
                 object = buildMember(parameters);
-                System.out.println("member");
                 break;
             case ISSUE:
                 object = buildIssue(parameters, time);
-                System.out.println("issue");
                 break;
             case MAIL_SERVER_INFO:
                 object = buildMailServerInfo(parameters);
-                System.out.println("mailServerInfo");
                 break;
             default: break;
         }
@@ -87,7 +82,6 @@ public class LogConverter {
                     isAvailableBool = isAvailable.equals("true");
                 }
                 object = new Book(id, title, author, publisher, isAvailableBool);
-                System.out.println("book");
                 break;
             }
             case MEMBER: {
@@ -96,14 +90,12 @@ public class LogConverter {
                 String email = StringUtils.substringBetween(statement, "EMAIL='", "'");
                 String mobile = StringUtils.substringBetween(statement, "MOBILE='", "'");
                 object = new Member(id, name, mobile, email);
-                System.out.println("member");
                 break;
             }
             case ISSUE: {
                 String bookId = StringUtils.substringBetween(statement, "BOOKID='", "'");
                 String renewCount = StringUtils.substringBetween(statement, "renew_count=", " W");
                 object = new Issue(bookId, renewCount, time);
-                System.out.println("issue");
                 break;
             }
             case MAIL_SERVER_INFO: {
@@ -130,25 +122,20 @@ public class LogConverter {
                 String author = StringUtils.substringBetween(statement, "AUTHOR='", "'");
                 String publisher = StringUtils.substringBetween(statement, "PUBLISHER='", "'");
                 object = new Book(id, title, author, publisher, null);
-                System.out.println("book");
                 break;
             }
             case MEMBER: {
                 String id = StringUtils.substringBetween(statement, "ID='", "'");
                 object = new Member(id);
-                System.out.println("member");
                 break;
             }
             case ISSUE: {
-                //object = buildIssue(parameters);
                 String bookId = StringUtils.substringBetween(statement, "BOOKID='", "'");
                 object = new Issue(bookId);
-                System.out.println("issue");
                 break;
             }
             case MAIL_SERVER_INFO: {
                 object = new MailServerInfo();
-                System.out.println("mailServerInfo");
                 break;
             }
             default: break;
