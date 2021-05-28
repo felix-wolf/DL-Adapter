@@ -4,14 +4,14 @@ public class MailServerInfo {
 
     private final String mailServer;
     private final Integer port;
-    private final String emailID;
+    private final String emailId;
     private final String password;
     private final Boolean sslEnabled;
 
-    public MailServerInfo(String mailServer, Integer port, String emailID, String password, Boolean sslEnabled) {
+    public MailServerInfo(String mailServer, Integer port, String emailId, String password, Boolean sslEnabled) {
         this.mailServer = mailServer;
         this.port = port;
-        this.emailID = emailID;
+        this.emailId = emailId;
         this.password = password;
         this.sslEnabled = sslEnabled;
     }
@@ -22,7 +22,7 @@ public class MailServerInfo {
     public MailServerInfo() {
         this.mailServer = null;
         this.port = null;
-        this.emailID = null;
+        this.emailId = null;
         this.password = null;
         this.sslEnabled = null;
     }
@@ -35,8 +35,8 @@ public class MailServerInfo {
         return port;
     }
 
-    public String getEmailID() {
-        return emailID;
+    public String getEmailId() {
+        return emailId;
     }
 
     public String getPassword() {
