@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -74,6 +75,12 @@ public class LogFileReader {
                                 dateString = dateString.split(Pattern.quote("_"))[1];
                                 SimpleDateFormat format = new SimpleDateFormat("d-MM-yyyy");
                                 Date fileDate = format.parse(dateString);
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(fileDate);
+                                cal.set(Calendar.HOUR, 23);
+                                cal.set(Calendar.MINUTE, 59);
+                                cal.set(Calendar.SECOND, 59);
+                                fileDate = cal.getTime();
                                 Date lastReadDate = new Date(lastRead);
                                 return fileDate.after(lastReadDate);
                             }
@@ -85,8 +92,25 @@ public class LogFileReader {
     private ArrayList<String> extractModifyingSQLStatements(File file) {
         ArrayList<String> logs = new ArrayList<>();
         try(BufferedReader br = new BufferedReader(new FileReader(file))) {
+            boolean continueAppending = false;
             for (String line; (line = br.readLine()) != null;) {
-                if (!line.equals("") && line.contains("jdbc.sqlonly")) logs.add(line);
+                // every sql statement is followed by an empty line,
+                // therefore this is the point to stop appending
+                if (line.equals("")) {
+                    continueAppending = false;
+                }
+                // if the sql statement is split into multiple lines,
+                // this if-clause appends the rest of the line to the initial part
+                if (continueAppending) {
+                    String statement = logs.remove(logs.size() - 1);
+                    statement = statement + line;
+                    logs.add(statement);
+                }
+                // adds a sql statement to the logs
+                if (!line.equals("") && line.contains("jdbc.sqlonly")) {
+                    continueAppending = true;
+                    logs.add(line);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
