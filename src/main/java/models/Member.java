@@ -1,10 +1,10 @@
 package models;
 
 public class Member {
-    String id;
-    String name;
-    String email;
-    String mobile;
+    private final String id;
+    private final String name;
+    private final String email;
+    private final String mobile;
 
     public Member(String id, String name, String mobile, String email) {
         this.id = id;
@@ -13,41 +13,19 @@ public class Member {
         this.mobile = mobile;
     }
 
-    public Member(String id) {
-        this.id = id;
-    }
-
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getMobile() {
         return mobile;
     }
-
-    public void setMobile(String mobile) {
-        this.mobile = mobile;
-    }
-
-
 }

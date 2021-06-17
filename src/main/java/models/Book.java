@@ -6,22 +6,17 @@ public class Book {
     private final String title;
     private final String author;
     private final String publisher;
-    private final Boolean isAvailable;
+    private final boolean isAvailable;
 
-    public Book(String id, String title, String author, String publisher, Boolean isAvailable) {
+    public Book(
+            String id, String title, String author, String publisher,
+            boolean isAvailable
+    ) {
         this.id = id;
         this.title = title;
         this.author = author;
         this.publisher = publisher;
         this.isAvailable = isAvailable;
-    }
-
-    public Book() {
-        this.id = null;
-        this.title = null;
-        this.author = null;
-        this.publisher = null;
-        this.isAvailable = true;
     }
 
     public String getId() {

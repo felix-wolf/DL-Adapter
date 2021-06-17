@@ -1,27 +1,16 @@
 package models;
 
 public class Issue {
-
-    private String memberId;
-    private String bookId;
-    private String renewCount;
-    long timestamp;
+    private final String memberId;
+    private final String bookId;
+    private final String renewCount;
+    private final long timestamp;
 
     public Issue(String memberId, String bookId, String renewCount, long timestamp) {
         this.bookId = bookId;
         this.memberId = memberId;
         this.timestamp = timestamp;
         this.renewCount = renewCount;
-    }
-
-    public Issue(String bookId, String renewCount, long timestamp) {
-        this.bookId = bookId;
-        this.renewCount = renewCount;
-        this.timestamp = timestamp;
-    }
-
-    public Issue(String bookId) {
-        this.bookId = bookId;
     }
 
     public String getMemberId() {

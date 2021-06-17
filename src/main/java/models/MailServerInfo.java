@@ -1,7 +1,6 @@
 package models;
 
 public class MailServerInfo {
-
     private final String mailServer;
     private final Integer port;
     private final String emailId;
@@ -14,17 +13,6 @@ public class MailServerInfo {
         this.emailId = emailId;
         this.password = password;
         this.sslEnabled = sslEnabled;
-    }
-
-    /**
-     * use below constructor when deleting all
-     */
-    public MailServerInfo() {
-        this.mailServer = null;
-        this.port = null;
-        this.emailId = null;
-        this.password = null;
-        this.sslEnabled = null;
     }
 
     public String getMailServer() {
@@ -46,5 +34,4 @@ public class MailServerInfo {
     public Boolean getSslEnabled() {
         return sslEnabled;
     }
-
 }
