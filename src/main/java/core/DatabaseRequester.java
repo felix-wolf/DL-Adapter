@@ -232,7 +232,7 @@ public class DatabaseRequester {
                 long renewCount = rs.getLong("RENEW_COUNT");
                 String updatedAt = rs.getString("UPDATED_AT");
                 boolean isDeleted = rs.getBoolean("IS_DELETED");
-                IssueExtended issueExtended = new IssueExtended(bookId, memberId, issueTime, renewCount, updatedAt, isDeleted);
+                IssueExtended issueExtended = new IssueExtended(memberId, bookId, issueTime, renewCount, updatedAt, isDeleted);
                 issueExtendeds.add(issueExtended);
             }
         } catch (SQLException exception) {
