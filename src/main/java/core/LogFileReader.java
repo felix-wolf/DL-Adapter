@@ -32,7 +32,8 @@ public class LogFileReader {
             lastRead = new Date(Utils.getLastReadTime());
             ArrayList<String> newEntries = getNewDatabaseEntries();
             if (!newEntries.isEmpty()) {
-                ArrayList<Operation> convertedEvents = new LogConverter().convertLogs(newEntries);
+                //ArrayList<Operation> convertedEvents = new LogConverter().convertLogs(newEntries);
+                ArrayList<Operation> convertedEvents = new ArrayList<>();
                 try {
                     EventProducer.produceEvents(convertedEvents);
                     Utils.updateLastRead(System.currentTimeMillis());
