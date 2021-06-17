@@ -10,6 +10,12 @@ import java.util.regex.Pattern;
 
 public class LogConverter {
 
+    /**
+     * converts a list of logs in String format to a list of operations for publishing
+     * logs a handled differently based on the type of operation
+     * @param logs the logs to convert
+     * @return the list of operations
+     */
     ArrayList<Operation> convertLogs(ArrayList<String> logs) {
         ArrayList<Operation> operations = new ArrayList<>();
         for (String log : logs) {
@@ -39,6 +45,12 @@ public class LogConverter {
         return operations;
     }
 
+    /**
+     * builds an insert operation
+     * @param statement the log containing the insert statement
+     * @param time the time the conversion took place
+     * @return returns an insert operation
+     */
     private Operation buildInsert(String statement, long time) {
         String[] parts = statement.split(" ");
         OperationType operationType = OperationType.valueOf(parts[0]);
@@ -66,6 +78,12 @@ public class LogConverter {
         return null;
     }
 
+    /**
+     * builds an update operation
+     * @param statement the log containing the update statement
+     * @param time the time the conversion took place
+     * @return returns an update operation
+     */
     private Operation buildUpdate(String statement, long time) {
         String[] parts = statement.split(" ");
         ObjectType model = ObjectType.valueOf(parts[1]);
@@ -111,6 +129,12 @@ public class LogConverter {
         return null;
     }
 
+    /**
+     * builds an delete operation
+     * @param statement the log containing the delete statement
+     * @param time the time the conversion took place
+     * @return returns an delete operation
+     */
     private Operation buildDelete(String statement, long time) {
         String[] parts = statement.split(" ");
         ObjectType model = ObjectType.valueOf(parts[2]);
@@ -146,26 +170,53 @@ public class LogConverter {
         return null;
     }
 
+    /**
+     * builds a book object from parameters in string format
+     * @param parameters the parameters from which the book is built
+     * @return the newly built book
+     */
     private Book buildBook(String parameters) {
         String[] parts = removeQuotes(parameters.split(","));
         return new Book(parts[0], parts[1], parts[2], parts[3], parts[3].equals("1"));
     }
 
+    /**
+     * builds a member object from parameters in string format
+     * @param parameters the parameters from which the member is built
+     * @return the newly built member
+     */
     private Member buildMember(String parameters) {
         String[] parts = removeQuotes(parameters.split(","));
         return new Member(parts[0], parts[1], parts[2], parts[3]);
     }
 
+    /**
+     * builds an issue object from parameters in string format
+     * @param parameters the parameters from which the issue is built
+     * @param time the time the issue was given
+     * @return the newly built issue
+     */
     private Issue buildIssue(String parameters, long time) {
         String[] parts = removeQuotes(parameters.split(","));
         return new Issue(parts[0], parts[1], "0", time);
     }
 
+    /**
+     * builds a mailServerInfo object from parameters in string format
+     * @param parameters the parameters from which the mailServerInfo is built
+     * @return the newly built mailServerInfo
+     */
     private MailServerInfo buildMailServerInfo(String parameters) {
         String[] parts = removeQuotes(parameters.split(","));
         return new MailServerInfo(parts[0], Integer.valueOf(parts[1]), parts[2], parts[3], parts[4].equals("1"));
     }
 
+    /**
+     * removes quotes from string parameters
+     * example: 'test' -> test
+     * @param parameters string containing quotes
+     * @return the parameters with the quotes removed
+     */
     private String[] removeQuotes(String[] parameters) {
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = parameters[i].replace("'", "");

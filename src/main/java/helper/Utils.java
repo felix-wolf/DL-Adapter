@@ -13,8 +13,16 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * utility class
+ */
 public class Utils {
 
+    /**
+     * creates a date object from a the timestamp of log
+     * @param dateAsString the timestamp in string format
+     * @return the created date
+     */
     public static Date getDateFromLogString(String dateAsString) {
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d HH:mm:ss.S");
         try {
@@ -25,6 +33,11 @@ public class Utils {
         return null;
     }
 
+    /**
+     * Somewhat mimics a very basic database by storing a timestamp in a text file in JSON format
+     * update the last read time
+     * @param time time of last read
+     */
     public static void updateLastRead(long time) {
         Information information;
         information = loadInformationFromFile();
@@ -36,6 +49,20 @@ public class Utils {
         writeInformationToFile(information);
     }
 
+    /**
+     * returns the last time the tool ran
+     * @return either the timestamp saved in the text file
+     * or a static date that is certain to be in the past
+     */
+    public static long getLastReadTime() {
+        Information information = loadInformationFromFile();
+        return information != null ? information.getTimestamp().getTime() : 1274434900;
+    }
+
+    /**
+     * loads the information object stored in a text file
+     * @return the information object loaded
+     */
     private static Information loadInformationFromFile() {
         Path path = Paths.get("information.txt");
         String fileContents;
@@ -48,11 +75,10 @@ public class Utils {
         return new Gson().fromJson(fileContents, Information.class);
     }
 
-    public static long getLastReadTime() {
-        Information information = loadInformationFromFile();
-        return information != null ? information.getTimestamp().getTime() : 1274434900;
-    }
-
+    /**
+     * replaces the stored information by a new instance
+     * @param information the new information object to store
+     */
     private static void writeInformationToFile(Information information) {
         try {
             FileWriter fileWriter = new FileWriter("information.txt");

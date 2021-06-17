@@ -11,6 +11,10 @@ import java.util.Properties;
 
 public class EventProducer {
 
+    /**
+     * creates a kafka producer
+     * @return the producer
+     */
     private static Producer<Long, String> createProducer() {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, Constants.BOOTSTRAP_SERVERS);
@@ -20,6 +24,11 @@ public class EventProducer {
         return new KafkaProducer<>(props);
     }
 
+    /**
+     * publishes the events to the topic
+     * @param events the events to be published
+     * @throws Exception that might occur while trying to publish
+     */
     static void produceEvents(final ArrayList<Operation> events) throws Exception {
         final Producer<Long, String> producer = createProducer();
         long time = System.currentTimeMillis();

@@ -25,6 +25,11 @@ public class LogFileReader {
         initialiseTimer();
     }
 
+    /**
+     * creates a timer that fires every 5 seconds
+     * upon firing, new database entries in logs a fetch, evaluated,
+     * converted and published in form of events
+     */
     private void initialiseTimer() {
         TimerUtil timer = new TimerUtil(5000);
         timer.startTimer(fireCounts -> {
@@ -47,6 +52,12 @@ public class LogFileReader {
         });
     }
 
+    /**
+     * fetches logs from all relevant log files.
+     * then for each log, check if it is older than the last time the tool ran.
+     * if so, the log is discarded as already processed
+     * @return the logs that have not been processed
+     */
     private ArrayList<String> getNewDatabaseEntries() {
         ArrayList<String> logs = new ArrayList<>();
         for (File file : getValidLogFiles()) {
@@ -63,6 +74,11 @@ public class LogFileReader {
         return logs;
     }
 
+    /**
+     * filters the log files by date
+     * @return the log files that where created on the same day
+     * or the days after the tool last ran
+     */
     private List<File> getValidLogFiles() {
         long lastRead = Utils.getLastReadTime();
         File folder = new File("../library-assistant/logs");
@@ -89,6 +105,13 @@ public class LogFileReader {
                 ).toList().blockingGet();
     }
 
+    /**
+     * extracts sql statements from the logs in the text file
+     * Methods takes into account that statements can be spread over multiple lines
+     * modifying statements are all statements != SELECT
+     * @param file the file containing the logs
+     * @return a list of filtered logs
+     */
     private ArrayList<String> extractModifyingSQLStatements(File file) {
         ArrayList<String> logs = new ArrayList<>();
         try(BufferedReader br = new BufferedReader(new FileReader(file))) {
