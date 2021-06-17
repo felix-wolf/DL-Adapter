@@ -25,6 +25,11 @@ public class Utils {
         return null;
     }
 
+    public static long getLastReadTime() {
+        Information information = loadInformationFromFile();
+        return information != null ? information.getTimestamp().getTime() : 1274434900;
+    }
+
     public static void updateLastRead(long time) {
         Information information;
         information = loadInformationFromFile();
@@ -46,11 +51,6 @@ public class Utils {
             return null;
         }
         return new Gson().fromJson(fileContents, Information.class);
-    }
-
-    public static long getLastReadTime() {
-        Information information = loadInformationFromFile();
-        return information != null ? information.getTimestamp().getTime() : 1274434900;
     }
 
     private static void writeInformationToFile(Information information) {
