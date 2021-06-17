@@ -27,6 +27,9 @@ public class DatabaseRequester {
         initialiseTimer();
     }
 
+    /**
+     * creates a connection to the database
+     */
     private void createConnection() {
         try {
             Class.forName(DRIVER_LIVE).newInstance();
@@ -38,6 +41,11 @@ public class DatabaseRequester {
         }
     }
 
+    /**
+     * creates a timer that fires every 5 seconds
+     * upon firing, the database is queried for new entries
+     * entries are then published in form of events
+     */
     private void initialiseTimer() {
         TimerUtil timer = new TimerUtil(5000);
         timer.startTimer(fireCounts -> {
@@ -52,13 +60,20 @@ public class DatabaseRequester {
                     e.printStackTrace();
                 }
             }
-            // stop timer
+            // stops timer
             if (fireCounts == -1) {
                 timer.stopTimer();
             }
         });
     }
 
+    /**
+     * checks if the updated_at timestamp is newer than the last time the tool ran
+     * which means the the entry belonging the to timestamp has not yet processed
+     * @param updatedAt timestamp in String format
+     * @param lastReadDate Time in Date form when the tool last ran
+     * @return true if updatedAt is newer
+     */
     private boolean updatedAtNewerThanLastRead(String updatedAt, Date lastReadDate) {
         if (updatedAt == null) return true;
         SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d HH:mm:ss.SSS");
@@ -72,6 +87,10 @@ public class DatabaseRequester {
         return fileDate.after(lastReadDate);
     }
 
+    /**
+     * generate new operations to publish
+     * @return a list of operations
+     */
     public ArrayList<Operation> generateNewOperations() {
         ArrayList<BookExtended> books = getNewBooks();
         ArrayList<MemberExtended> members = getNewMembers();
@@ -85,6 +104,26 @@ public class DatabaseRequester {
         return operations;
     }
 
+    /**
+     * processes entities by converting objects to operations
+     * The type of operations is inferred by the state of the entity, meaning:
+     *
+     * if an entity has set is_deleted to true, it is a DELETE operation.
+     * after the entities is published to the kafka topic, this tool fully deletes the entity in the database
+     *
+     * if an entity has set updated_at to null, it is an INSERT operation.
+     * to avoid that this entities is processed again the next time the timer fires,
+     * this tool sets the updated_at column to CURRENT_TIMESTAMP
+     *
+     * if updated_at is a valid value that is newer than lastTimeRead and is_deleted is false,
+     * it is an UPDATE operation.
+     * UPDATE operations do not require any additional work other than processing the event
+     *
+     * @param extendeds list of entities to process
+     * @param objectType type of object
+     * @param nameOfPrimaryKey name of the primary key (used when updating or deleting the entry after processing)
+     * @return list of operations
+     */
     private ArrayList<Operation> processEntities(ArrayList<? extends Extended> extendeds, ObjectType objectType, String nameOfPrimaryKey) {
         ArrayList<Operation> operations = new ArrayList<>();
         for (Extended extended : extendeds) {
@@ -101,17 +140,34 @@ public class DatabaseRequester {
         return operations;
     }
 
+    /**
+     * marks an entity as changed by updating the updated_at column
+     * @param object the object to update
+     * @param objectType the type of the object
+     * @param nameOfPrimaryKey name of the primary key
+     */
     private void markEntityAsChanged(Extended object, ObjectType objectType, String nameOfPrimaryKey) {
         String queryString = "Update " + objectType.name() + " SET UPDATED_AT = CURRENT_TIMESTAMP WHERE "
                 + nameOfPrimaryKey + " = '" + object.getId() + "'";
         execAction(queryString);
     }
 
+    /**
+     * deletes an entity
+     * @param object the object to update
+     * @param objectType the type of the object
+     * @param nameOfPrimaryKey name of the primary key
+     */
     private void deleteEntity(Extended object, ObjectType objectType, String nameOfPrimaryKey) {
         String queryString = "DELETE FROM " +  objectType.name() + " WHERE " + nameOfPrimaryKey + " = '" + object.getId() + "'";
         execAction(queryString);
     }
 
+    /**
+     * gets all the books in the database
+     * filters them by updated_at column
+     * @return returns a list of all books that have not yet been processed
+     */
     private ArrayList<BookExtended> getNewBooks() {
         ResultSet rs = execQuery("SELECT * FROM BOOK");
         ArrayList<BookExtended> books = new ArrayList<>();
@@ -134,6 +190,11 @@ public class DatabaseRequester {
         return books;
     }
 
+    /**
+     * gets all the members in the database
+     * filters them by updated_at column
+     * @return returns a list of all members that have not yet been processed
+     */
     private ArrayList<MemberExtended> getNewMembers() {
         ResultSet rs = execQuery("SELECT * FROM MEMBER");
         ArrayList<MemberExtended> memberExtendeds = new ArrayList<>();
@@ -155,6 +216,11 @@ public class DatabaseRequester {
         return memberExtendeds;
     }
 
+    /**
+     * gets all the issues in the database
+     * filters them by updated_at column
+     * @return returns a list of all issues that have not yet been processed
+     */
     private ArrayList<IssueExtended> getNewIssues() {
         ResultSet rs = execQuery("SELECT * FROM ISSUE");
         ArrayList<IssueExtended> issueExtendeds = new ArrayList<>();
@@ -176,6 +242,11 @@ public class DatabaseRequester {
         return issueExtendeds;
     }
 
+    /**
+     * gets all the mailServerInfos in the database
+     * filters them by updated_at column
+     * @return returns a list of all mailServerInfos that have not yet been processed
+     */
     private ArrayList<MailServerInfoExtended> getNewMailServerInfos() {
         ResultSet rs = execQuery("SELECT * FROM MAIL_SERVER_INFO");
         ArrayList<MailServerInfoExtended> mailServerInfoExtendeds = new ArrayList<>();
@@ -198,10 +269,15 @@ public class DatabaseRequester {
         return mailServerInfoExtendeds;
     }
 
-    public boolean execAction(String qu) {
+    /**
+     * executes an non selecting query
+     * @param query query to execute
+     * @return true if successful, false if an exceptions was thrown
+     */
+    public boolean execAction(String query) {
         try {
             Statement stmt = conn.createStatement();
-            stmt.execute(qu);
+            stmt.execute(query);
             return true;
         }
         catch (SQLException ex) {
@@ -212,6 +288,11 @@ public class DatabaseRequester {
         }
     }
 
+    /**
+     * executes a select query
+     * @param query query to execute
+     * @return the resultSet containing the entities, null if exceptions was thrown
+     */
     private ResultSet execQuery(String query) {
         ResultSet result;
         try {

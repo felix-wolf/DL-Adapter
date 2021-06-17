@@ -6,15 +6,17 @@ import java.util.TimerTask;
 public class TimerUtil {
 
     Timer timer;
-    int delayInMillis = 5000;
+    int delayInMillis;
     int fireCounts = 0;
-
-    public TimerUtil() {}
 
     public TimerUtil(int delayInMillis) {
         this.delayInMillis = delayInMillis;
     }
 
+    /**
+     * starts a timer, sends fire events to the passed interface
+     * @param timerListener the listener for the fire events
+     */
     public void startTimer(TimerListener timerListener) {
         System.out.println("startTimer");
         timer = new Timer();
@@ -27,6 +29,9 @@ public class TimerUtil {
         }, 0, delayInMillis);
     }
 
+    /**
+     * stops the timer
+     */
     public void stopTimer() {
         fireCounts = 0;
         timer.cancel();
