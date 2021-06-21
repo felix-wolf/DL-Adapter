@@ -9,8 +9,6 @@ import timer.TimerUtil;
 
 import javax.swing.*;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
@@ -51,7 +49,7 @@ public class DatabaseRequester {
         timer.startTimer(fireCounts -> {
             System.out.println("Fired, count: " + fireCounts);
             lastRead = new Date(Utils.getLastReadTime());
-            ArrayList<Operation> convertedEvents = generateNewOperations();
+            ArrayList<Operation> convertedEvents = generateNewOperations(new Timestamp(lastRead.getTime()));
             if (!convertedEvents.isEmpty()) {
                 try {
                     EventProducer.produceEvents(convertedEvents);
@@ -68,39 +66,19 @@ public class DatabaseRequester {
     }
 
     /**
-     * checks if the updated_at timestamp is newer than the last time the tool ran
-     * which means the the entry belonging the to timestamp has not yet processed
-     * @param updatedAt timestamp in String format
-     * @param lastReadDate Time in Date form when the tool last ran
-     * @return true if updatedAt is newer
-     */
-    private boolean updatedAtNewerThanLastRead(String updatedAt, Date lastReadDate) {
-        if (updatedAt == null) return true;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d HH:mm:ss.SSS");
-        Date fileDate;
-        try {
-            fileDate = format.parse(updatedAt);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return fileDate.after(lastReadDate);
-    }
-
-    /**
      * generate new operations to publish
      * @return a list of operations
      */
-    public ArrayList<Operation> generateNewOperations() {
-        ArrayList<BookExtended> books = getNewBooks();
-        ArrayList<MemberExtended> members = getNewMembers();
-        ArrayList<IssueExtended> issues = getNewIssues();
-        ArrayList<MailServerInfoExtended> mailServerInfos = getNewMailServerInfos();
+    public ArrayList<Operation> generateNewOperations(Timestamp lastRead) {
+        ArrayList<BookExtended> books = getNewBooks(lastRead);
+        ArrayList<MemberExtended> members = getNewMembers(lastRead);
+        ArrayList<IssueExtended> issues = getNewIssues(lastRead);
+        ArrayList<MailServerInfoExtended> mailServerInfo = getNewMailServerInfos(lastRead);
         ArrayList<Operation> operations = new ArrayList<>();
         operations.addAll(processEntities(books, ObjectType.BOOK, "id"));
         operations.addAll(processEntities(members, ObjectType.MEMBER, "id"));
         operations.addAll(processEntities(issues, ObjectType.ISSUE, "bookid"));
-        operations.addAll(processEntities(mailServerInfos, ObjectType.MAIL_SERVER_INFO, "server_name"));
+        operations.addAll(processEntities(mailServerInfo, ObjectType.MAIL_SERVER_INFO, "server_name"));
         return operations;
     }
 
@@ -168,8 +146,8 @@ public class DatabaseRequester {
      * filters them by updated_at column
      * @return returns a list of all books that have not yet been processed
      */
-    private ArrayList<BookExtended> getNewBooks() {
-        ResultSet rs = execQuery("SELECT * FROM BOOK");
+    private ArrayList<BookExtended> getNewBooks(Timestamp lastRead) {
+        ResultSet rs = execQuery("SELECT * FROM BOOK WHERE UPDATED_AT IS NULL OR UPDATED_AT > '" + lastRead + "'");
         ArrayList<BookExtended> books = new ArrayList<>();
         try {
             while (Objects.requireNonNull(rs).next()) {
@@ -186,7 +164,6 @@ public class DatabaseRequester {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
-        books.removeIf(book -> !updatedAtNewerThanLastRead(book.getUpdatedAt(), lastRead));
         return books;
     }
 
@@ -195,8 +172,8 @@ public class DatabaseRequester {
      * filters them by updated_at column
      * @return returns a list of all members that have not yet been processed
      */
-    private ArrayList<MemberExtended> getNewMembers() {
-        ResultSet rs = execQuery("SELECT * FROM MEMBER");
+    private ArrayList<MemberExtended> getNewMembers(Timestamp lastRead) {
+        ResultSet rs = execQuery("SELECT * FROM MEMBER WHERE UPDATED_AT IS NULL OR UPDATED_AT > '" + lastRead + "'");
         ArrayList<MemberExtended> memberExtendeds = new ArrayList<>();
         try {
             while (Objects.requireNonNull(rs).next()) {
@@ -212,7 +189,6 @@ public class DatabaseRequester {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
-        memberExtendeds.removeIf(memberExtended -> !updatedAtNewerThanLastRead(memberExtended.getUpdatedAt(), lastRead));
         return memberExtendeds;
     }
 
@@ -221,8 +197,8 @@ public class DatabaseRequester {
      * filters them by updated_at column
      * @return returns a list of all issues that have not yet been processed
      */
-    private ArrayList<IssueExtended> getNewIssues() {
-        ResultSet rs = execQuery("SELECT * FROM ISSUE");
+    private ArrayList<IssueExtended> getNewIssues(Timestamp lastRead) {
+        ResultSet rs = execQuery("SELECT * FROM ISSUE WHERE UPDATED_AT IS NULL OR UPDATED_AT > '" + lastRead + "'");
         ArrayList<IssueExtended> issueExtendeds = new ArrayList<>();
         try {
             while (Objects.requireNonNull(rs).next()) {
@@ -238,7 +214,6 @@ public class DatabaseRequester {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
-        issueExtendeds.removeIf(issueExtended -> !updatedAtNewerThanLastRead(issueExtended.getUpdatedAt(), lastRead));
         return issueExtendeds;
     }
 
@@ -247,8 +222,8 @@ public class DatabaseRequester {
      * filters them by updated_at column
      * @return returns a list of all mailServerInfos that have not yet been processed
      */
-    private ArrayList<MailServerInfoExtended> getNewMailServerInfos() {
-        ResultSet rs = execQuery("SELECT * FROM MAIL_SERVER_INFO");
+    private ArrayList<MailServerInfoExtended> getNewMailServerInfos(Timestamp lastRead) {
+        ResultSet rs = execQuery("SELECT * FROM MAIL_SERVER_INFO WHERE UPDATED_AT IS NULL OR UPDATED_AT > '" + lastRead + "'");
         ArrayList<MailServerInfoExtended> mailServerInfoExtendeds = new ArrayList<>();
         try {
             while (Objects.requireNonNull(rs).next()) {
@@ -265,7 +240,6 @@ public class DatabaseRequester {
         } catch (SQLException exception) {
             exception.printStackTrace();
         }
-        mailServerInfoExtendeds.removeIf(mailServerInfoExtended -> !updatedAtNewerThanLastRead(mailServerInfoExtended.getUpdatedAt(), lastRead));
         return mailServerInfoExtendeds;
     }
 

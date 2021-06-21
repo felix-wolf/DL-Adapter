@@ -6,7 +6,7 @@ import java.util.TimerTask;
 public class TimerUtil {
 
     Timer timer;
-    int delayInMillis;
+    final int delayInMillis;
     int fireCounts = 0;
 
     public TimerUtil(int delayInMillis) {

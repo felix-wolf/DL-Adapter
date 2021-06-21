@@ -10,28 +10,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * utility class
  */
 public class Utils {
-
-    /**
-     * creates a date object from a the timestamp of log
-     * @param dateAsString the timestamp in string format
-     * @return the created date
-     */
-    public static Date getDateFromLogString(String dateAsString) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-d HH:mm:ss.S");
-        try {
-            return format.parse(dateAsString);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
 
     /**
      * Somewhat mimics a very basic database by storing a timestamp in a text file in JSON format
