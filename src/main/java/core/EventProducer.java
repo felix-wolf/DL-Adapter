@@ -6,7 +6,6 @@ import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -28,7 +27,7 @@ public class EventProducer {
 
     /**
      * publishes the events to the topic
-     * @param events the events to be published
+     * @param eventsMap the events to be published
      * @throws Exception that might occur while trying to publish
      */
     static void produceEvents(final HashMap<Integer, Operation> eventsMap) throws Exception {

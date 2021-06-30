@@ -98,6 +98,12 @@ public class DatabaseRequester {
         execAction(queryString);
     }
 
+    /**
+     * converts a json string to an object
+     * @param json the json as a string
+     * @param objectType the type of object to convert the json to
+     * @return the converted object
+     */
     private Object processObjectJson(String json, ObjectType objectType) {
         Gson gson = new Gson();
         Object object = null;
