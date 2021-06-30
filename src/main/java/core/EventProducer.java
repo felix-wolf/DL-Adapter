@@ -7,6 +7,8 @@ import org.apache.kafka.common.serialization.LongSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class EventProducer {
@@ -29,12 +31,13 @@ public class EventProducer {
      * @param events the events to be published
      * @throws Exception that might occur while trying to publish
      */
-    static void produceEvents(final ArrayList<Operation> events) throws Exception {
+    static void produceEvents(final HashMap<Integer, Operation> eventsMap) throws Exception {
         final Producer<Long, String> producer = createProducer();
         long time = System.currentTimeMillis();
 
         try {
-            for (Operation operation : events) {
+            for (Map.Entry<Integer, Operation> entry : eventsMap.entrySet()) {
+                Operation operation = entry.getValue();
                 String topic = operation.getObjectType().name().toLowerCase();
                 long index = operation.getTime();
                 final ProducerRecord<Long, String> record = new ProducerRecord<>(topic, index, operation.toJson());
@@ -43,6 +46,7 @@ public class EventProducer {
                 System.out.printf(
                         "sent record(key=%s value=%s) meta(partition=%d, offset=%d) time=%d\n",
                         record.key(), record.value(), metadata.partition(), metadata.offset(), elapsedTime);
+                DatabaseRequester.deleteProcessedOperation(entry.getKey());
             }
         } finally {
             producer.flush();
