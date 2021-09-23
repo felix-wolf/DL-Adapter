@@ -66,8 +66,8 @@ public class DatabaseRequester {
      * @return returns a list of all books that have not yet been processed
      */
     private ArrayList<BookExtended> getNewBooks(Timestamp lastRead, long startTime) {
-        String query = "SELECT * FROM BOOK WHERE UPDATED_AT IS NULL OR UPDATED_AT > '" + lastRead + "'";
-        //String query = "SELECT * FROM BOOK";
+        //String query = "SELECT * FROM BOOK WHERE UPDATED_AT IS NULL OR UPDATED_AT > '" + lastRead + "'";
+        String query = "SELECT * FROM BOOK";
         ResultSet rs = execQuery(query);
         ArrayList<BookExtended> books = new ArrayList<>();
         try {
@@ -89,7 +89,7 @@ public class DatabaseRequester {
         System.out.println("TimeQuery: " + queryTime);
         long duration = queryTime - startTime;
         System.out.println("QueryDuration: " + duration);
-        //books.removeIf(book -> !updatedAtNewerThanLastRead(book.getUpdatedAt()));
+        books.removeIf(book -> !updatedAtNewerThanLastRead(book.getUpdatedAt()));
         return books;
     }
 

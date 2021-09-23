@@ -9,8 +9,8 @@ public class Main {
      */
     public static void main(String[] args) {
         System.out.println("Program started via main method");
-        new DatabaseRequester().initialiseTimer();
-        //DatabasePreparer.fillDatabase();
+        new DatabaseRequester().initialiseTimer(); // <-- use this to run the tests
+        // DatabasePreparer.fillDatabase(); // <-- use this to fill the database
     }
 
 }
